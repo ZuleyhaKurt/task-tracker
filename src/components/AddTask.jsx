@@ -1,50 +1,76 @@
-import React, { useState } from 'react'
+import React, { useState ,useEffect} from 'react'
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Tasks from './Tasks';
+import Container from "react-bootstrap/Container"
 
 const AddTask = () => {
-    const [save, setSave] = useState(0)
-    const[obj,setObj]=useState({})
-
-    const Change = (e) => { 
-       setObj(obj.add = e.target.value) 
-        
-    }
-    const ChangeDate = (e) => {
-        setObj(obj.date = e.target.value )
-    }
-
+    const [obj, setObj] = useState({addtask:"",date:""})
+    const { addtask, date } = obj
+    const [data, setData] = useState([])
+    
+    useEffect(() => {
+        const items = JSON.parse(localStorage.getItem('items'));
+        if (items) {
+            setData(items)
+        }
+    
+    }, [])
+    
+    
+    const Change = (e) => {
+        setObj({
+            ...obj,
+            [e.target.id]: e.target.value,
+            id:new Date().getTime(),
+            
+        })
+  }
     console.log(obj)
+    console.log(data)
+    
     const getTask = (e) => { 
-   e.preventDefault()
-        setSave(save + 1)
+        e.preventDefault()
+        setData([...data, obj])
+        localStorage.setItem('items', JSON.stringify([...data, obj]))
+        setObj({addtask:"",date:""})
+
        
 
     }
 
   
    
-  return (
-     <Form className='text-start'>
+    return (
+        <Container className='form'>
+     <Form onSubmit={getTask} className='text-start'>
           <Form.Group className="mb-3" controlId="addtask" >
             <Form.Label>Task</Form.Label>
-            <Form.Control type="text" placeholder="Add Task" onChange={Change} />
+                    <Form.Control type="text" placeholder="Add Task" onChange={Change} value={addtask} />
             
           </Form.Group>
     
-          <Form.Group className="mb-3" controlId="daytime">
+          <Form.Group className="mb-3" controlId="date">
             <Form.Label>Day&Time</Form.Label>
-            <Form.Control type="text" placeholder="Add Day&Time" onChange={ChangeDate}/>
+                    <Form.Control type="datetime-local" placeholder="Add Day&Time" onChange={Change}  />
           </Form.Group>
           
-          <Button className='text-center w-100' variant="primary" type="submit" onClick={getTask}>
+          <Button className='text-center w-100' variant="primary" type="submit" >
             Save
           </Button>
-          {save ? <Tasks obj={obj}/> : null}
+         
       </Form>
       
-  )
+            {data.lenght ?
+                data.map((item, index) => { 
+                    return <Tasks index={index} item={item} />
+                }) : <p>No task to Show</p>}
+   
+   
+   </Container>
+      )
+    
+    
     }
 
 export default AddTask
